@@ -1,10 +1,12 @@
 #!/bin/bash
-MAX_DEPTH=""
+
+MAX_DEPTH=()
 POSITIONAL=()
+
 while [[ $# -gt 0 ]]; do
     case $1 in
         --max_depth)
-            MAX_DEPTH="-maxdepth $2"
+            MAX_DEPTH=( -maxdepth "$2" )
             shift 2
             ;;
         *)
@@ -24,9 +26,10 @@ if [[ ! -d "$INPUT_DIR" || ! -d "$OUTPUT_DIR" ]]; then
 fi
 
 declare -A file_counts
+
 find_args=( "$INPUT_DIR" )
-if [[ -n "$MAX_DEPTH" ]]; then
-    find_args+=( $MAX_DEPTH )
+if [[ ${#MAX_DEPTH[@]} -gt 0 ]]; then
+    find_args+=( "${MAX_DEPTH[@]}" )
 fi
 find_args+=( -type f )
 
