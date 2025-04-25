@@ -1,1 +1,79 @@
-3.11
+INPUT_DIR="$1"
+OUTPUT_DIR="$2"
+
+if [[ ! -d "$INPUT_DIR" || ! -d "$OUTPUT_DIR" ]]; then
+    echo "Ошибка: укажите две директории"
+    exit 1
+fi
+
+declare -A file_counts
+
+find "$INPUT_DIR" -type f | while read -r filepath; do
+    filename=$(basename "$filepath")
+
+    if [[ -e "$OUTPUT_DIR/$filename" || ${file_counts[$filename]+_} ]]; then
+        count=${file_counts[$filename]:-1}
+        ((count++))
+        file_counts[$filename]=$count
+        name="${filename%.*}"
+        ext="${filename##*.}"
+        if [[ "$filename" == "$ext" ]]; then
+            newname="${name}${count}"
+        else
+            newname="${name}${count}.${ext}"
+        fi
+        cp "$filepath" "$OUTPUT_DIR/$newname"
+    else
+        file_counts[$filename]=1
+        cp "$filepath" "$OUTPUT_DIR/$filename"
+    fi
+done 
+MAX_DEPTH=""
+POSITIONAL=()
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --max_depth)
+            MAX_DEPTH=" -maxdepth $2 "
+            shift 2
+            ;;
+        *)
+            POSITIONAL+=("$1")
+            shift
+            ;;
+    esac
+done
+
+set -- "${POSITIONAL[@]}"
+
+INPUT_DIR="$1"
+OUTPUT_DIR="$2"
+
+if [[ ! -d "$INPUT_DIR" || ! -d "$OUTPUT_DIR" ]]; then
+    echo "Ошибка: укажите две директории"
+    exit 1
+fi
+
+declare -A file_counts
+
+eval find \"$INPUT_DIR\" -type f $MAX_DEPTH | while read -r filepath; do
+    filename=$(basename "$filepath")
+
+    if [[ -e "$OUTPUT_DIR/$filename" || ${file_counts[$filename]+_} ]]; then
+        count=${file_counts[$filename]:-1}
+        ((count++))
+        file_counts[$filename]=$count
+        name="${filename%.*}"
+        ext="${filename##*.}"
+        if [[ "$filename" == "$ext" ]]; then
+            newname="${name}${count}"
+        else
+            newname="${name}${count}.${ext}"
+        fi
+        cp "$filepath" "$OUTPUT_DIR/$newname"
+    else
+        file_counts[$filename]=1
+        cp "$filepath" "$OUTPUT_DIR/$filename"
+    fi
+done
+
+
